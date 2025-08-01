@@ -18,16 +18,43 @@ void getContours(Mat imgDil,Mat img){
 	// drawContours(img,contours,0,Scalar(255,0,255),2);
 	
 	cout<<endl;
+	short int corners = 0;
+	string type = "";
+	int area  = 0;
+	Rect boundRect[contours.size()];
 	for (int i =0 ; i < contours.size();i++){
-		int area = contourArea(contours[i]);
-
+		area = contourArea(contours[i]);
+		
 		if (area > 1000){
-			cout<<contours[i].size()<<endl;
+		
 			float peri = arcLength(contours[i],true);
 			approxPolyDP(contours[i],contours[i],0.02*peri,true);
 			
-			drawContours(img,contours,i,Scalar(255,0,255),2);
-			//cout<<contours[i].size()<<endl;
+			
+			corners = contours[i].size();
+			
+			boundRect[i] = boundingRect(contours[i]);
+			rectangle(img,boundRect[i].tl(),boundRect[i].br(),Scalar(0,255,0),2);
+			
+			if(corners ==4){
+				cout<<boundRect[i].x<<" "<<boundRect[i].y<<endl;
+				float ratio = float(boundRect[i].width) / float(boundRect[i].height);
+				if (ratio >= 0.89 && ratio <= 1.05){
+					type = "Square";
+				}
+				else{
+					type = "Rectangle";
+				}
+			}
+			else if(corners == 3){
+				type = "Trianlge";
+			}
+			else if(corners > 4){
+				type = "Circle";
+			}
+			
+			putText(img,type,Point(boundRect[i].x,boundRect[i].y-5),FONT_HERSHEY_PLAIN,1,Scalar(255,255,255),2);
+			type = "";
 			
 			
 		}
@@ -37,7 +64,7 @@ void getContours(Mat imgDil,Mat img){
 
 int main() {
 	
-	string path = "shapes.png";
+	string path = "new_img.png";
 	Mat img = imread(path);
 	
 	// preprocessing
